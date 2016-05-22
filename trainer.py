@@ -6,18 +6,18 @@ sess = tf.InteractiveSession()
 
 
 def weight_variable(shape):
-	initial = tf.truncated_normal(shape, stddev=0.1)
-	return tf.Variable(initial)
+  initial = tf.truncated_normal(shape, stddev=0.1)
+  return tf.Variable(initial)
 
 def bias_variable(shape):
-	initial = tf.constant(0.1, shape=shape)
-	return tf.Variable(initial)
+  initial = tf.constant(0.1, shape=shape)
+  return tf.Variable(initial)
 
 def conv2d(x, W):
-	return tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
+  return tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
 
 def max_pool_2x2(x):
-	return tf.nn.max_pool(x, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
+  return tf.nn.max_pool(x, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
 
 
 x = tf.placeholder(tf.float32, [None, 3072]) 
@@ -81,23 +81,23 @@ batch = loadCifarDataForBatch(1, oneHot = True)
 data_for_batch = batch["data"]
 labels_for_batch = batch["labels"]
 for i in range(0,10000,50):
-	print("starting run for %s"%(i))
-	#use 50 values per step
-	x_input = data_for_batch[i:i+50,:]
-	y_input = labels_for_batch[i:i+50,:]
+  print("starting run for %s"%(i))
+  #use 50 values per step
+  x_input = data_for_batch[i:i+50,:]
+  y_input = labels_for_batch[i:i+50,:]
 
-	print(x_input.shape)
-	print(y_input.shape)
+  print(x_input.shape)
+  print(y_input.shape)
 
-	if i%100 == 0:
-		train_accuracy = accuracy.eval(feed_dict = {
-			x: x_input, y_: y_input, keep_prob: 1.0 })
-		print("step %d, training accuracy %g"%(i, train_accuracy))
+  if i%100 == 0:
+    train_accuracy = accuracy.eval(feed_dict = {
+      x: x_input, y_: y_input, keep_prob: 1.0 })
+    print("step %d, training accuracy %g"%(i, train_accuracy))
 
-	#Run a train step every iteration (it's not in the if)
-	train_step.run(feed_dict={x: x_input, y_: y_input, keep_prob: .5})
+  #Run a train step every iteration (it's not in the if)
+  train_step.run(feed_dict={x: x_input, y_: y_input, keep_prob: .5})
 
 test_batch = loadTestBatch(oneHot = True)
 
 print ("test accuracy: %g"%accuracy.eval(feed_dict={
-	x: test_batch["data"], y_: test_batch["labels"], keep_prob: 1.0}))
+  x: test_batch["data"], y_: test_batch["labels"], keep_prob: 1.0}))
