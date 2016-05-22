@@ -1,0 +1,10 @@
+# CIFAR-10 dataset folder
+cifar-10-batches-py/
+
+*.tar
+*.gz
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
