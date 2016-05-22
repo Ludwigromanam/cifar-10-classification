@@ -1,5 +1,4 @@
-import os,urllib,subprocess,numpy as np
-
+import cPickle,os,urllib,subprocess,numpy as np
 
 CIFAR_10_URL = "http://www.cs.utoronto.ca/~kriz/cifar-10-python.tar.gz"
 CIFAR_10_DIRECTORY = "cifar-10-batches-py"
@@ -14,7 +13,6 @@ def downloadCifarData():
 
 
 def unpickleBatch(file):
-    import cPickle
     fo = open(file, 'rb')
     dict = cPickle.load(fo)
     fo.close()
@@ -31,8 +29,12 @@ def toOneHot(data):
 	return data
 
 
-def loadCifarDataForBatch(batchNum, onehot = True):
+def loadCifarDataForBatch(batchNum, oneHot = True):
 	if (not os.path.isdir(CIFAR_10_DIRECTORY) or not os.path.exists(CIFAR_10_DIRECTORY)):
 		downloadCifarData()
 	data = unpickleBatch(fileForBatch(batchNum))
-	return data if not onehot else toOneHot(data)
+	return toOneHot(data) if oneHot else data
+
+def loadTestBatch(oneHot = True):
+	data = unpickleBatch("%s/test_batch"%(CIFAR_10_DIRECTORY))
+	return toOneHot(data) if oneHot else data
