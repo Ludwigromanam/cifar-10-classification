@@ -4,6 +4,11 @@ cifar-10-batches-py/
 *.tar
 *.gz
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # OS generated files #
 ######################
 .DS_Store
