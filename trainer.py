@@ -23,17 +23,17 @@ def max_pool_2x2(x):
 x = tf.placeholder(tf.float32, [None, 3072]) 
 y_ = tf.placeholder(tf.float32, [None, 10])
 
-#First Convolutional Layer
-W_conv1 = weight_variable([5,5,1,32])
+#First Convolutional Layer - return 32 features by sampling 5x5 areas, over 3 color channels
+W_conv1 = weight_variable([5,5,3,32])
 b_conv1 = bias_variable([32])
 
-x_image = tf.reshape(x, [-1,48,64,1])
+x_image = tf.reshape(x, [-1,32,32,3])
 
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 h_pool1 = max_pool_2x2(h_conv1)
 
 
-#Second Convolutional Layer
+#Second Convolutional Layer - return 64 features by sampling 5x5 areas
 W_conv2 = weight_variable([5,5,32,64])
 b_conv2 = bias_variable([64])
 
@@ -41,11 +41,11 @@ h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
 
-#Deeply Connected Layer
-W_fc1 = weight_variable([12*16*64, 1024])
+#Deeply Connected Layer - TODO why is this value not 8*8*64*3?
+W_fc1 = weight_variable([8*8*64, 1024])
 b_fc1 = bias_variable([1024])
 
-h_pool2_flat = tf.reshape(h_pool2, [-1, 12*16*64])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 8*8*64])
 
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
