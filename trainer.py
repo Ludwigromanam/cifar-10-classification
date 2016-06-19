@@ -25,6 +25,7 @@ def max_pool_2x2(x):
 #Log information about the given tensor into a histogram
 def writeHistogramSummary(label, tensor):
   with tf.name_scope(label):
+    print "histogram ", label, " shape:", tensor.get_shape()
     tf.scalar_summary("%s max: " % label, tf.reduce_max(tensor))
     tf.scalar_summary("%s min: " % label, tf.reduce_min(tensor))
     tf.scalar_summary("%s mean: " % label, tf.reduce_mean(tensor))
@@ -33,6 +34,7 @@ def writeHistogramSummary(label, tensor):
 #Log information about the given tensor as a scalar
 def writeScalarSummary(label, tensor):
   with tf.name_scope(label):
+    print "scalar ", label, " shape:", tensor.get_shape()
     tf.scalar_summary(label, tensor)
 
 
@@ -42,15 +44,15 @@ y_ = tf.placeholder(tf.float32, [None, 10])
 #First Convolutional Layer - return 32 features by sampling 5x5 areas, over 3 color channels
 with tf.name_scope("first_layer"):  
   W_conv1 = weight_variable([5,5,3,32])
-  writeHistogramSummary("weight", W_conv1)
+  # writeHistogramSummary("weight", W_conv1)
 
   b_conv1 = bias_variable([32])
-  writeHistogramSummary("bias", b_conv1)
+  # writeHistogramSummary("bias", b_conv1)
 
   x_image = tf.reshape(x, [-1,32,32,3])
 
   h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
-  writeHistogramSummary("activations", h_conv1)
+  writeHistogramSummary("first_layer/activations", h_conv1)
 
   h_pool1 = max_pool_2x2(h_conv1)
   writeHistogramSummary("pooling", h_pool1)
@@ -60,60 +62,61 @@ with tf.name_scope("first_layer"):
 #Second Convolutional Layer - return 64 features by sampling 5x5 areas
 with tf.name_scope("second_layer"):
   W_conv2 = weight_variable([5,5,32,64])
-  writeHistogramSummary("weight", W_conv2)
+  # writeHistogramSummary("weight", W_conv2)
 
   b_conv2 = bias_variable([64])
-  writeHistogramSummary("bias", b_conv2)
+  # writeHistogramSummary("bias", b_conv2)
 
 
   h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
-  writeHistogramSummary("activations", h_conv2)
+  writeHistogramSummary("second_layer/activations", h_conv2)
 
   h_pool2 = max_pool_2x2(h_conv2)
-  writeHistogramSummary("pooling", h_pool2)
+  # writeHistogramSummary("pooling", h_pool2)
 
 
 
 #Deeply Connected Layer - TODO why is this value not 8*8*64*3?
 with tf.name_scope("deeply_connected_layer"):
   W_fc1 = weight_variable([8*8*64, 1024])
-  writeHistogramSummary("weight", W_fc1)
+  # writeHistogramSummary("weight", W_fc1)
 
   b_fc1 = bias_variable([1024])
-  writeHistogramSummary("bias", b_fc1)
+  # writeHistogramSummary("bias", b_fc1)
 
 
   h_pool2_flat = tf.reshape(h_pool2, [-1, 8*8*64])
 
   h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
-  writeHistogramSummary("activations", h_fc1)
+  writeHistogramSummary("deeply_connected_layer/activations", h_fc1)
 
 
 #Dropout
-with tf.name_scope("dropout"):
+with tf.name_scope("dropout_layer"):
   keep_prob = tf.placeholder(tf.float32)
-  writeHistogramSummary("keep_prob", keep_prob)
+  writeHistogramSummary("dropout_layer/keep_prob", keep_prob)
 
   h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-  writeHistogramSummary("dropout", h_fc1_drop)
+  writeHistogramSummary("dropout_layer/dropout", h_fc1_drop)
 
 
 #Readout Layer
 with tf.name_scope("readout_layer"):
   W_fc2 = weight_variable([1024, 10])
-  writeHistogramSummary("weight", W_fc2,)
+  # writeHistogramSummary("weight", W_fc2,)
 
   b_fc2 = bias_variable([10])
-  writeHistogramSummary("bias", b_fc2)
+  # writeHistogramSummary("bias", b_fc2)
 
   y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
-  writeScalarSummary("softmax_result_y", y_conv)
+
+  # writeScalarSummary("softmax_result_y", y_conv)
 
 
 #Train and Evaluate the Model
 
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv), reduction_indices=[1]))
-writeHistogramSummary("cross_entropy", cross_entropy)
+writeScalarSummary("cross_entropy", cross_entropy)
 
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
@@ -149,8 +152,11 @@ for b in range(1,6):
         x: x_input, y_: y_input, keep_prob: 1.0 })
       print("step %d, training accuracy %g" % (i, train_accuracy))
 
-    #Run a train step every iteration (it's not in the if)
-    train_step.run(feed_dict={x: x_input, y_: y_input, keep_prob: .5})
+    #Run a train step every iteration
+    #(also run the merged function which will aggregate summary data for logging)
+    # train_step.run(feed_dict={x: x_input, y_: y_input, keep_prob: .5})
+    summary,acc = sess.run([merged, train_step], feed_dict={x: x_input, y_: y_input, keep_prob: .5})
+    test_writer.add_summary(summary, i)
 
   print("done with batch %d" % b)
 
